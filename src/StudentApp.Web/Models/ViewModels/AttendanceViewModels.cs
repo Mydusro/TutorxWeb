@@ -7,13 +7,17 @@ public class AttendanceRecordVm
     public int GroupId { get; set; }
     public string GroupName { get; set; } = null!;
     public DateOnly Date { get; set; }
+    public TimeOnly? Time { get; set; }
     public List<StudentAttendanceRowVm> Rows { get; set; } = [];
 }
 
 public class StudentAttendanceRowVm
 {
     public int StudentId { get; set; }
+    public string FirstName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
     public string FullName { get; set; } = null!;
+    public string? GroupNumber { get; set; }
     public AttendanceStatus? Status { get; set; }
 }
 

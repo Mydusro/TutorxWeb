@@ -360,12 +360,16 @@ namespace StudentApp.Web.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
+                    b.Property<TimeOnly?>("Time")
+                        .HasColumnType("time");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
-                    b.HasIndex("StudentId", "GroupId", "Date")
-                        .IsUnique();
+                    b.HasIndex("StudentId", "GroupId", "Date", "Time")
+                        .IsUnique()
+                        .HasFilter("[Time] IS NOT NULL");
 
                     b.ToTable("Attendances");
                 });
@@ -483,6 +487,9 @@ namespace StudentApp.Web.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<byte>("Role")
+                        .HasColumnType("tinyint");
+
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
@@ -493,7 +500,7 @@ namespace StudentApp.Web.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("TaskItemId", "StudentId")
+                    b.HasIndex("TaskItemId", "StudentId", "Role")
                         .IsUnique();
 
                     b.ToTable("PresentationStudents");
@@ -526,6 +533,10 @@ namespace StudentApp.Web.Migrations
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
 
+                    b.Property<string>("GroupNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -538,6 +549,9 @@ namespace StudentApp.Web.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CardNumber")
+                        .HasFilter("[CardNumber] IS NOT NULL");
 
                     b.HasIndex("GroupId");
 
@@ -584,8 +598,17 @@ namespace StudentApp.Web.Migrations
                     b.Property<int>("ActivityId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsNumberedTask")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsPresentation")
                         .HasColumnType("bit");
+
+                    b.Property<decimal?>("MaxScore")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("PresentationDate")
                         .HasColumnType("datetime2");
@@ -753,7 +776,7 @@ namespace StudentApp.Web.Migrations
                     b.HasOne("StudentApp.Web.Models.Entities.TaskItem", "TaskItem")
                         .WithMany()
                         .HasForeignKey("TaskItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Activity");
 

@@ -9,6 +9,8 @@ else
 {
     var groupId = (int)ViewBag.GroupId;
     var groupName = (string)ViewBag.GroupName;
+    var years = Model.Where(s => s.Year.HasValue).Select(s => s.Year!.Value).Distinct().OrderBy(y => y).ToList();
+    var groupNumbers = Model.Where(s => s.GroupNumber != null).Select(s => s.GroupNumber!).Distinct().OrderBy(g => g).ToList();
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Študenti &mdash; @groupName</h2>
@@ -29,41 +31,100 @@ else
         </a>
     </div>
 </div>
-    <table class="table table-striped table-hover">
+
+<div class="row g-2 mb-3 align-items-end">
+    <div class="col-12 col-md-5 col-lg-4">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" id="studentSearch" class="form-control"
+                   placeholder="Hľadať podľa mena, e-mailu alebo čísla karty…" autocomplete="off" />
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <select id="statusFilter" class="form-select form-select-sm">
+            <option value="">Všetky stavy</option>
+            <option value="active">Aktívny</option>
+            <option value="inactive">Neaktívny</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <select id="yearFilter" class="form-select form-select-sm">
+            <option value="">Všetky ročníky</option>
+            @foreach (var y in years)
+            {
+                <option value="@y">@y. ročník</option>
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <select id="groupNumberFilter" class="form-select form-select-sm">
+            <option value="">Všetky krúžky</option>
+            @foreach (var g in groupNumbers)
+            {
+                <option value="@g">@g</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="button" id="clearFilters" class="btn btn-sm btn-outline-secondary d-none">
+            <i class="bi bi-x-lg me-1"></i>Zrušiť filtre
+        </button>
+    </div>
+    <div class="col-auto ms-auto">
+        <span id="filterCount" class="text-muted small"></span>
+    </div>
+</div>
+
+    <table id="studentsTable" class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
                 <th style="width:2.5rem">
                     <input type="checkbox" id="selectAll" class="form-check-input" title="Označiť všetko" />
                 </th>
-                <th>Meno</th>
-                <th>Email</th>
-                <th>Číslo karty</th>
-                <th>Ročník</th>
-                <th>Stav</th>
-                <th>Absencie</th>
-                <th>Priemer</th>
+                <th data-sort="text">Meno<span class="sort-icon"></span></th>
+                <th data-sort="text">Priezvisko<span class="sort-icon"></span></th>
+                <th data-sort="text">Email<span class="sort-icon"></span></th>
+                <th data-sort="text">Číslo karty<span class="sort-icon"></span></th>
+                <th data-sort="text">Krúžok<span class="sort-icon"></span></th>
+                <th data-sort="num">Ročník<span class="sort-icon"></span></th>
+                <th data-sort="text">Stav<span class="sort-icon"></span></th>
+                <th data-sort="num">Absencie<span class="sort-icon"></span></th>
+                <th data-sort="num">Súčet<span class="sort-icon"></span></th>
                 <th>Akcie</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var s in Model)
             {
-                <tr class="@(!s.IsActive ? "table-secondary" : "")">
+                <tr class="@(!s.IsActive ? "table-secondary" : "")"
+                    data-name="@s.FullName.ToLowerInvariant()"
+                    data-email="@(s.Email?.ToLowerInvariant() ?? "")"
+                    data-card="@(s.CardNumber?.ToLowerInvariant() ?? "")"
+                    data-active="@(s.IsActive ? "active" : "inactive")"
+                    data-year="@(s.Year.HasValue ? s.Year.Value.ToString() : "")"
+                    data-groupnumber="@(s.GroupNumber?.ToLowerInvariant() ?? "")"
+                    data-detail-url="@Url.Action("Details", new { id = s.Id })">
                     <td>
                         <input type="checkbox" class="form-check-input row-check" value="@s.Id" data-name="@s.FullName" />
                     </td>
-                    <td><a asp-action="Details" asp-route-id="@s.Id">@s.FullName</a></td>
+                    <td>@s.FirstName</td>
+                    <td>@s.LastName</td>
                     <td>@(s.Email ?? "-")</td>
                     <td>@(s.CardNumber ?? "-")</td>
+                    <td>@(s.GroupNumber ?? "-")</td>
                     <td>@(s.Year.HasValue ? s.Year.Value.ToString() : "-")</td>
                     <td>
                         @if (s.IsActive) { <span class="badge bg-success">Aktívny</span> }
                         else { <span class="badge bg-secondary">Neaktívny</span> }
                     </td>
                     <td>@s.AbsenceCount</td>
-                    <td>@(s.AvgScore.HasValue ? s.AvgScore.Value.ToString("F1") : "-")</td>
+                    <td>@(s.TotalScore.HasValue ? s.TotalScore.Value.ToString("F2") : "-")</td>
                     <td>
                         <div class="btn-group btn-group-sm">
+                            <a asp-action="Details" asp-route-id="@s.Id" class="btn btn-sm btn-icon btn-outline-secondary"
+                               data-bs-toggle="tooltip" title="Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
                             <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-icon btn-outline-primary"
                                data-bs-toggle="tooltip" title="Upraviť">
                                 <i class="bi bi-pencil"></i>
@@ -86,145 +147,12 @@ else
         </tbody>
     </table>
 
+    <div id="noResultsMsg" class="alert alert-info d-none">Žiadni študenti nevyhovujú zadaným filtrom.</div>
+
     @if (!Model.Any())
     {
         <div class="alert alert-info">V tejto skupine zatiaľ nie sú žiadni študenti. Pridajte študentov ručne alebo importujte zo súboru.</div>
     }
 }
 
-@section Scripts {
-    <script>
-(function () {
-    var selectAll       = document.getElementById('selectAll');
-    if (!selectAll) return;
-    var countLabel      = document.getElementById('selectionCount');
-    var bulkActivateBtn   = document.getElementById('bulkActivateBtn');
-    var bulkDeactivateBtn = document.getElementById('bulkDeactivateBtn');
-    var bulkDeleteBtn     = document.getElementById('bulkDeleteBtn');
-
-    function getChecked() {
-        return Array.from(document.querySelectorAll('.row-check:checked'));
-    }
-
-    function updateToolbar() {
-        var checked = getChecked();
-        var count = checked.length;
-        var hasSelection = count > 0;
-        countLabel.textContent = count + ' vybraných';
-        countLabel.classList.toggle('d-none', !hasSelection);
-        bulkActivateBtn.disabled   = !hasSelection;
-        bulkDeactivateBtn.disabled = !hasSelection;
-        bulkDeleteBtn.disabled     = !hasSelection;
-        var total = document.querySelectorAll('.row-check').length;
-        selectAll.checked = count === total && total > 0;
-        selectAll.indeterminate = count > 0 && count < total;
-    }
-
-    selectAll.addEventListener('change', function () {
-        document.querySelectorAll('.row-check').forEach(function (cb) {
-            cb.checked = selectAll.checked;
-        });
-        updateToolbar();
-    });
-
-    document.querySelectorAll('.row-check').forEach(function (cb) {
-        cb.addEventListener('change', updateToolbar);
-    });
-
-    function bulkSetActive(active) {
-        var checked = getChecked();
-        if (checked.length === 0) return;
-        var names  = checked.map(function (cb) { return cb.dataset.name; }).join(', ');
-        var action = active ? 'Aktivovať' : 'Deaktivovať';
-        var msg = checked.length === 1
-            ? action + ' "' + names + '"?'
-            : action + ' ' + checked.length + ' študentov: ' + names + '?';
-        var modalEl  = document.getElementById('confirmModal');
-        var modal    = bootstrap.Modal.getOrCreateInstance(modalEl);
-        document.getElementById('confirmModalTitle').textContent = action + ' študentov';
-        document.getElementById('confirmModalBody').textContent  = msg;
-        var actionBtn = document.getElementById('confirmModalAction');
-        var newBtn = actionBtn.cloneNode(true);
-        actionBtn.parentNode.replaceChild(newBtn, actionBtn);
-        newBtn.addEventListener('click', function () {
-            modal.hide();
-            var ids = checked.map(function (cb) { return parseInt(cb.value); });
-            bulkActivateBtn.disabled   = true;
-            bulkDeactivateBtn.disabled = true;
-            fetch('/Students/BulkSetActive', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentIds: ids, active: active })
-            }).then(function (r) { return r.json(); })
-              .then(function (d) {
-                  if (d.success) location.reload();
-                  else alert(d.message || action + ' zlyhalo.');
-              })
-              .catch(function () { alert(action + ' zlyhalo.'); });
-        });
-        modal.show();
-    }
-
-    bulkActivateBtn.addEventListener('click',   function () { bulkSetActive(true);  });
-    bulkDeactivateBtn.addEventListener('click', function () { bulkSetActive(false); });
-
-    bulkDeleteBtn.addEventListener('click', function () {
-        var checked = getChecked();
-        if (checked.length === 0) return;
-        var names = checked.map(function (cb) { return cb.dataset.name; }).join(', ');
-        var msg = checked.length === 1
-            ? 'Natárvalo vymazať "' + names + '"? Túto akciu nemožno vrátiť.'
-            : 'Natárvalo vymazať ' + checked.length + ' študentov: ' + names + '? Túto akciu nemožno vrátiť.';
-        var modalEl  = document.getElementById('confirmModal');
-        var modal    = bootstrap.Modal.getOrCreateInstance(modalEl);
-        document.getElementById('confirmModalTitle').textContent = 'Vymazať študentov';
-        document.getElementById('confirmModalBody').textContent  = msg;
-        var actionBtn = document.getElementById('confirmModalAction');
-        var newBtn = actionBtn.cloneNode(true);
-        actionBtn.parentNode.replaceChild(newBtn, actionBtn);
-        newBtn.addEventListener('click', function () {
-            modal.hide();
-            var ids = checked.map(function (cb) { return parseInt(cb.value); });
-            bulkDeleteBtn.disabled = true;
-            fetch('/Students/BulkDelete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(ids)
-            }).then(function (r) { return r.json(); })
-              .then(function (d) {
-                  if (d.success) location.reload();
-                  else alert(d.message || 'Vymazanie zlyhalo.');
-              })
-              .catch(function () { alert('Vymazanie zlyhalo.'); });
-        });
-        modal.show();
-    });
-})();
-
-        document.querySelectorAll('.btn-delete-student').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var studentId   = this.dataset.studentId;
-                var studentName = this.dataset.studentName;
-                var modalEl  = document.getElementById('confirmModal');
-                var modal    = bootstrap.Modal.getOrCreateInstance(modalEl);
-                document.getElementById('confirmModalTitle').textContent = 'Vymazať študenta';
-                document.getElementById('confirmModalBody').textContent  =
-                    'Naozaj chcete vymazať "' + studentName + '"? Túto akciu nemožno vrátiť.';
-                var actionBtn = document.getElementById('confirmModalAction');
-                var newBtn = actionBtn.cloneNode(true);
-                actionBtn.parentNode.replaceChild(newBtn, actionBtn);
-                newBtn.addEventListener('click', function () {
-                    modal.hide();
-                    fetch('/Students/Delete/' + studentId, { method: 'POST' })
-                        .then(function (r) { return r.json(); })
-                        .then(function (d) {
-                            if (d.success) location.reload();
-                            else alert(d.message || 'Vymazanie zlyhalo.');
-                        })
-                        .catch(function () { alert('Vymazanie zlyhalo.'); });
-                });
-                modal.show();
-            });
-        });
-    </script>
-}
+@* Scripts loaded from site.js *@

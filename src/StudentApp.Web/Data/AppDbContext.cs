@@ -28,9 +28,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         // Group - unique name
         builder.Entity<Group>().HasIndex(g => g.Name).IsUnique();
 
-        // Attendance unique constraint
+        // Student - card number is not globally unique (same card can appear in different groups)
+        builder.Entity<Student>().HasIndex(s => s.CardNumber)
+            .HasFilter("[CardNumber] IS NOT NULL");
+
+        // Attendance unique constraint — each student can have one record per (date, time) slot
         builder.Entity<Attendance>()
-            .HasIndex(a => new { a.StudentId, a.GroupId, a.Date }).IsUnique();
+            .HasIndex(a => new { a.StudentId, a.GroupId, a.Date, a.Time }).IsUnique();
 
         // Evaluation unique constraint
         builder.Entity<Evaluation>()
@@ -137,7 +141,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(ps => ps.Student).WithMany(s => s.PresentationStudents)
             .HasForeignKey(ps => ps.StudentId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<PresentationStudent>()
-            .HasIndex(ps => new { ps.TaskItemId, ps.StudentId }).IsUnique();
+            .HasIndex(ps => new { ps.TaskItemId, ps.StudentId, ps.Role }).IsUnique();
 
         // ActivityAttribute → Activity (cascade delete)
         builder.Entity<ActivityAttribute>()

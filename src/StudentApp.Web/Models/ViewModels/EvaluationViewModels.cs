@@ -9,6 +9,7 @@ public class TaskSummaryForEvalVm
     public int ActivityId { get; set; }
     public string ActivityName { get; set; } = null!;
     public bool IsPresentation { get; set; }
+    public decimal? MaxScore { get; set; }
 }
 
 public class EvaluationIndexVm
@@ -32,9 +33,9 @@ public class EvaluationCreateVm
 
     public string StudentName { get; set; } = null!;
     public string TaskName { get; set; } = null!;
+    public decimal? MaxScore { get; set; }
 
     [Required]
-    [Range(0, 100, ErrorMessage = "Score must be between 0 and 100.")]
     public decimal Score { get; set; }
 
     [MaxLength(500)]
@@ -49,9 +50,9 @@ public class EvaluationEditVm
 
     public string StudentName { get; set; } = null!;
     public string TaskName { get; set; } = null!;
+    public decimal? MaxScore { get; set; }
 
     [Required]
-    [Range(0, 100, ErrorMessage = "Score must be between 0 and 100.")]
     public decimal Score { get; set; }
 
     [MaxLength(500)]
@@ -61,6 +62,8 @@ public class EvaluationEditVm
 public class EvaluationItemVm
 {
     public int Id { get; set; }
+    public int ActivityId { get; set; }
+    public string ActivityName { get; set; } = null!;
     public string TaskName { get; set; } = null!;
     public decimal Score { get; set; }
     public string? Comment { get; set; }

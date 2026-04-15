@@ -48,15 +48,25 @@ else
                              style="background:#e8f0fe">
                             <i class="bi bi-people-fill fs-4" style="color:#1e3a5f"></i>
                         </div>
-                        <div>
+                        <div class="flex-grow-1">
                             <h6 class="mb-1 fw-semibold">Študenti</h6>
                             <p class="text-muted small mb-2">Základné informácie o študentoch</p>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="badge rounded-pill" style="background:#e8f0fe;color:#1e3a5f">Meno</span>
-                                <span class="badge rounded-pill" style="background:#e8f0fe;color:#1e3a5f">Priezvisko</span>
-                                <span class="badge rounded-pill" style="background:#e8f0fe;color:#1e3a5f">Číslo karty</span>
-                                <span class="badge rounded-pill" style="background:#e8f0fe;color:#1e3a5f">Ročník</span>
-                                <span class="badge rounded-pill" style="background:#e8f0fe;color:#1e3a5f">Email</span>
+                            <div class="d-flex flex-wrap gap-2 student-fields">
+                                @foreach (var field in new[] {
+                                    ("IncludeStudentFirstName",  "Meno"),
+                                    ("IncludeStudentLastName",   "Priezvisko"),
+                                    ("IncludeStudentCardNumber", "Číslo karty"),
+                                    ("IncludeStudentYear",       "Ročník"),
+                                    ("IncludeStudentEmail",      "Email")
+                                })
+                                {
+                                    <label class="student-field-label" onclick="event.stopPropagation()">
+                                        <input type="checkbox" name="@field.Item1" value="true"
+                                               class="student-field-cb" checked />
+                                        <input type="hidden" name="@field.Item1" value="false" />
+                                        <span class="badge rounded-pill student-field-badge" style="background:#e8f0fe;color:#1e3a5f">@field.Item2</span>
+                                    </label>
+                                }
                             </div>
                         </div>
                         <i class="bi bi-check-circle-fill ms-auto text-primary check-icon" style="font-size:1.2rem"></i>
@@ -77,13 +87,22 @@ else
                              style="background:#e9f7ef">
                             <i class="bi bi-calendar-check-fill fs-4" style="color:#1a5276"></i>
                         </div>
-                        <div>
+                        <div class="flex-grow-1">
                             <h6 class="mb-1 fw-semibold">Dochádzka</h6>
-                            <p class="text-muted small mb-2">Jeden stĺpec na dátum — P&nbsp;/&nbsp;N&nbsp;/&nbsp;O na študenta</p>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="badge rounded-pill" style="background:#d5f5e3;color:#1a5276">P = Prítomný</span>
-                                <span class="badge rounded-pill" style="background:#fde8e8;color:#922b21">N = Neprítomný</span>
-                                <span class="badge rounded-pill" style="background:#fef9e7;color:#7d6608">O = Ospravedlnený</span>
+                            <p class="text-muted small mb-2">Záznamy dochádzky na študenta</p>
+                            <div class="d-flex flex-wrap gap-2 student-fields">
+                                <label class="student-field-label" onclick="event.stopPropagation()">
+                                    <input type="checkbox" name="IncludeAttendanceDetails" value="true"
+                                           class="student-field-cb" checked />
+                                    <input type="hidden" name="IncludeAttendanceDetails" value="false" />
+                                    <span class="badge rounded-pill student-field-badge" style="background:#e9f7ef;color:#1a5276">Detail</span>
+                                </label>
+                                <label class="student-field-label" onclick="event.stopPropagation()">
+                                    <input type="checkbox" name="IncludeAttendanceSummary" value="true"
+                                           class="student-field-cb" checked />
+                                    <input type="hidden" name="IncludeAttendanceSummary" value="false" />
+                                    <span class="badge rounded-pill student-field-badge" style="background:#e9f7ef;color:#1a5276">Súhrn</span>
+                                </label>
                             </div>
                         </div>
                         <i class="bi bi-circle ms-auto text-muted check-icon" style="font-size:1.2rem"></i>
@@ -130,12 +149,22 @@ else
                              style="background:#f4ecf7">
                             <i class="bi bi-list-task fs-4" style="color:#6c3483"></i>
                         </div>
-                        <div>
+                        <div class="flex-grow-1">
                             <h6 class="mb-1 fw-semibold">Úlohy a hodnotenia</h6>
-                            <p class="text-muted small mb-2">Jeden stĺpec na úlohu — skóre študenta alebo prázdne</p>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="badge rounded-pill" style="background:#f4ecf7;color:#6c3483">Aktivita › Názov úlohy</span>
-                                <span class="badge rounded-pill" style="background:#f4ecf7;color:#6c3483">Skóre</span>
+                            <p class="text-muted small mb-2">Stĺpce hodnotení úloh za každú aktivitu</p>
+                            <div class="d-flex flex-wrap gap-2 student-fields">
+                                <label class="student-field-label" onclick="event.stopPropagation()">
+                                    <input type="checkbox" name="IncludeTasksDetails" value="true"
+                                           class="student-field-cb" checked />
+                                    <input type="hidden" name="IncludeTasksDetails" value="false" />
+                                    <span class="badge rounded-pill student-field-badge" style="background:#f4ecf7;color:#6c3483">Detail</span>
+                                </label>
+                                <label class="student-field-label" onclick="event.stopPropagation()">
+                                    <input type="checkbox" name="IncludeTasksSummary" value="true"
+                                           class="student-field-cb" checked />
+                                    <input type="hidden" name="IncludeTasksSummary" value="false" />
+                                    <span class="badge rounded-pill student-field-badge" style="background:#f4ecf7;color:#6c3483">Súhrn</span>
+                                </label>
                             </div>
                         </div>
                         <i class="bi bi-circle ms-auto text-muted check-icon" style="font-size:1.2rem"></i>
@@ -158,10 +187,11 @@ else
                         </div>
                         <div>
                             <h6 class="mb-1 fw-semibold">Prezentácie</h6>
-                            <p class="text-muted small mb-2">Jeden stĺpec na prezentáciu — ✓ ak je študent priradený</p>
+                            <p class="text-muted small mb-2">Jeden stĺpec na prezentáciu — ✓ (Prezentujúci) / ✓ (Náhradník) / prázdne</p>
                             <div class="d-flex flex-wrap gap-1">
                                 <span class="badge rounded-pill" style="background:#fef5e4;color:#935116">Aktivita › Názov (dátum)</span>
-                                <span class="badge rounded-pill" style="background:#fef5e4;color:#935116">Priradený ✓</span>
+                                <span class="badge rounded-pill" style="background:#fef5e4;color:#935116">✓ (Prezentujúci)</span>
+                                <span class="badge rounded-pill" style="background:#fef5e4;color:#935116">✓ (Náhradník)</span>
                             </div>
                         </div>
                         <i class="bi bi-circle ms-auto text-muted check-icon" style="font-size:1.2rem"></i>
@@ -234,55 +264,4 @@ else
 
 </form>
 
-} @* end else: group selected *@
-
-@section Styles {
-<style>
-.export-card { cursor: pointer; display: block; }
-.section-card {
-    transition: border-color .15s, box-shadow .15s;
-    border-color: #dee2e6 !important;
-    cursor: pointer;
-}
-.section-card.active {
-    border-color: #0d6efd !important;
-    box-shadow: 0 0 0 3px rgba(13,110,253,.12);
-}
-.section-card.active .check-icon { color: #0d6efd !important; }
-.section-card.active .check-icon::before { content: "\F26B"; } /* check-circle-fill */
-.section-card:not(.active) .check-icon::before { content: "\F287"; } /* circle */
-.cursor-pointer { cursor: pointer; }
-.format-radio .form-check-label { cursor: pointer; }
-</style>
-}
-
-@section Scripts {
-<script>
-document.querySelectorAll('.section-cb').forEach(function(cb) {
-    var cardId = cb.dataset.card;
-    var card = document.querySelector('.section-card[data-card="' + cardId + '"]');
-    var icon = card.querySelector('.check-icon');
-
-    function sync() {
-        if (cb.checked) {
-            card.classList.add('active');
-            icon.className = 'bi bi-check-circle-fill ms-auto text-primary check-icon';
-            icon.style.fontSize = '1.2rem';
-        } else {
-            card.classList.remove('active');
-            icon.className = 'bi bi-circle ms-auto text-muted check-icon';
-            icon.style.fontSize = '1.2rem';
-        }
-    }
-
-    // Click anywhere on the card label toggles the checkbox
-    cb.closest('label').addEventListener('click', function(e) {
-        e.preventDefault();
-        cb.checked = !cb.checked;
-        sync();
-    });
-
-    sync(); // initial state
-});
-</script>
 }

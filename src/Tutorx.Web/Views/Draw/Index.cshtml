@@ -1,0 +1,70 @@
+@model DrawIndexVm
+@{
+    ViewData["Title"] = "Žrebovanie";
+    bool noGroup = (bool?)ViewBag.NoGroupSelected == true;
+    var jsonOpts = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = null };
+    var activitiesJson = System.Text.Json.JsonSerializer.Serialize(
+        Model?.Activities ?? new List<DrawActivityVm>(), jsonOpts);
+    var allNamesJson = System.Text.Json.JsonSerializer.Serialize(
+        Model?.AllActiveStudentNames ?? new List<string>());
+    var initialIdsJson = System.Text.Json.JsonSerializer.Serialize(
+        (ViewBag.InitialActivityIds as List<int>) ?? new List<int>());
+    var presentationsJson = System.Text.Json.JsonSerializer.Serialize(
+        Model?.Presentations ?? new List<DrawPresentationVm>(), jsonOpts);
+    var initialPresIdsJson = System.Text.Json.JsonSerializer.Serialize(
+        (ViewBag.InitialPresentationIds as List<int>) ?? new List<int>());
+    var initialPresRole = (string)(ViewBag.InitialPresRole ?? "0");
+}
+@if (noGroup)
+{
+    <partial name="_NoGroupSelected" />
+}
+@{ if (noGroup) return; }
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="mb-0">Žrebovanie</h2>
+    <div class="d-flex align-items-center gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                @Model.GroupName
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                @foreach (var g in Model.AllGroups)
+                {
+                    <li>
+                        <a class="dropdown-item @(g.Id == Model.GroupId ? "active" : "")"
+                           asp-action="Index" asp-route-groupId="@g.Id">@g.Name</a>
+                    </li>
+                }
+            </ul>
+        </div>
+        <a asp-action="History" asp-route-groupId="@Model.GroupId" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-clock-history me-1"></i>História
+        </a>
+    </div>
+</div>
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <button id="add-card-btn" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Pridať žrebovanie (aktivita)
+    </button>
+    <button id="add-pres-card-btn" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Pridať žrebovanie (prezentácia)
+    </button>
+    <button id="draw-all-btn" class="btn btn-primary btn-sm px-4" disabled>
+        <i class="bi bi-shuffle me-2"></i>Žrebovať všetko
+    </button>
+</div>
+
+<script>
+    window.__drawData = {
+        allNames:        @Html.Raw(allNamesJson),
+        activities:      @Html.Raw(activitiesJson),
+        initialIds:      @Html.Raw(initialIdsJson),
+        presentations:   @Html.Raw(presentationsJson),
+        initialPresIds:  @Html.Raw(initialPresIdsJson),
+        initialPresRole: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(initialPresRole))
+    };
+</script>
+
+<div class="row g-3" id="draw-cards"></div>

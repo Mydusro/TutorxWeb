@@ -1,0 +1,61 @@
+@model AttendanceHistoryVm
+@{ ViewData["Title"] = "História dochádzky"; }
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>História dochádzky &mdash; @Model.GroupName</h2>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="Record" asp-route-groupId="@Model.GroupId" class="btn btn-primary btn-sm">Záznam</a>
+        <a asp-action="Summary" asp-route-groupId="@Model.GroupId" class="btn btn-outline-info btn-sm">Súhrn</a>
+    </div>
+</div>
+
+@if (Model.Dates.Any())
+{
+    <div class="table-scroll-wrap att-wrap">
+        <table class="table table-bordered table-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Študent</th>
+                    @foreach (var d in Model.Dates)
+                    {
+                        <th class="text-center" style="min-width:80px;">
+                            @d.Date.ToString("dd.MM.yyyy")
+                            @if (d.Time.HasValue)
+                            {
+                                <br /><small>@d.Time.Value.ToString("HH:mm")</small>
+                            }
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Students)
+                {
+                    <tr>
+                        <td>@s.FullName</td>
+                        @foreach (var d in Model.Dates)
+                        {
+                            var key = (s.Id, d.Date, d.Time);
+                            <td class="text-center">
+                                @if (Model.StatusMap.TryGetValue(key, out var status))
+                                {
+                                    @if (status == AttendanceStatus.Present) { <span class="badge bg-success">P</span> }
+                                    else if (status == AttendanceStatus.Absent) { <span class="badge bg-danger">N</span> }
+                                    else { <span class="badge bg-warning text-dark">O</span> }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">-</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">Žiadne záznamy o dochádzke.</div>
+}

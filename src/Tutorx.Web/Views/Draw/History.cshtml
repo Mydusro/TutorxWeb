@@ -1,0 +1,95 @@
+@model DrawHistoryVm
+@{
+    ViewData["Title"] = "História žrebovania";
+    var tz = TimeZoneInfo.FindSystemTimeZoneById(
+        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+            ? "Central European Standard Time"
+            : "Europe/Prague");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>História žrebovania &mdash; @Model.GroupName</h2>
+    <a asp-action="Index" asp-route-groupId="@Model.GroupId" class="btn btn-primary">Späť na žrebovanie</a>
+</div>
+
+@if (!Model.Batches.Any())
+{
+    <div class="alert alert-info">Žiadna história žrebovania pre túto skupinu.</div>
+}
+else
+{
+    <div class="table-scroll-wrap history-wrap">
+    <table class="table table-striped table-hover align-middle mb-4 history-table">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Aktivita</th>
+                <th>Prezentácia</th>
+                <th>Žrebovaní študenti</th>
+                <th>Dátum a čas</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ var idx = (Model.CurrentPage - 1) * 25 + 1; }
+            @foreach (var b in Model.Batches)
+            {
+                <tr>
+                    <td>@(idx++)</td>
+                    <td>@(b.ActivityName ?? "—")</td>
+                    <td>@(b.PresentationTitle ?? "-")</td>
+                    <td>
+                        @if (b.PresentationTitle != null)
+                        {
+                            var presentees = b.Students.Where(s => s.PresRole == 0).ToList();
+                            var substitutes = b.Students.Where(s => s.PresRole == 1).ToList();
+                            var unroled = b.Students.Where(s => s.PresRole == null).ToList();
+                            @if (presentees.Any())
+                            {
+                                <span class="badge bg-primary me-1">Prezentujúci</span>
+                                @foreach (var s in presentees)
+                                {
+                                    <span class="badge bg-secondary me-1">@s.Name</span>
+                                }
+                            }
+                            @if (substitutes.Any())
+                            {
+                                <span class="badge bg-warning text-dark me-1">Náhradník</span>
+                                @foreach (var s in substitutes)
+                                {
+                                    <span class="badge bg-secondary me-1">@s.Name</span>
+                                }
+                            }
+                            @foreach (var s in unroled)
+                            {
+                                <span class="badge bg-secondary me-1">@s.Name</span>
+                            }
+                        }
+                        else
+                        {
+                            @foreach (var s in b.Students)
+                            {
+                                <span class="badge bg-secondary me-1">@s.Name</span>
+                            }
+                        }
+                    </td>
+                    <td class="text-nowrap">@TimeZoneInfo.ConvertTimeFromUtc(b.DrawnAt, tz).ToString("dd.MM.yyyy HH:mm:ss")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" asp-action="History" asp-route-groupId="@Model.GroupId" asp-route-page="@i">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
